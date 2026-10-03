@@ -14,24 +14,66 @@ jobs:
       - name: Gerekli araçları kur
         run: |
           sudo apt-get update
-          sudo apt-get install -y unzip git live-build debootstrap xorriso \
-            grub-pc-bin grub-efi-amd64-bin qemu-user-static
+          sudo apt-get install -y \
+            unzip \
+            git \
+            live-build \
+            debootstrap \
+            xorriso \
+            grub-pc-bin \
+            grub-efi-amd64-bin \
+            qemu-user-static \
+            binfmt-support
 
-      - name: XLoOs projesini aç
+      - name: Projeyi aç
         run: |
+          rm -rf xloos
           mkdir xloos
           unzip -q XLoOs-Lite-1.0.zip -d xloos
 
+          echo "=== DOSYALAR ==="
+          find xloos -maxdepth 3 -type f -print
+
+      - name: Build dosyasını bul
+        run: |
+          BUILD=$(find xloos -name "build.sh" -type f | head -n 1)
+
+          if [ -z "$BUILD" ]; then
+            echo "HATA: build.sh bulunamadı!"
+            exit 1
+          fi
+
+          echo "Build dosyası: $BUILD"
+          chmod +x "$BUILD"
+
       - name: XLoOs'u derle
         run: |
-          BUILD=$(find xloos -name build.sh -type f | head -1)
-          chmod +x "$BUILD"
-          cd "$(dirname "$BUILD")"
-          sudo ./build.sh
+          set -euxo pipefail
 
-      - name: ISO'yu bul
+          BUILD=$(find xloos -name "build.sh" -type f | head -n 1)
+          BUILD_DIR=$(dirname "$BUILD")
+
+          cd "$BUILD_DIR"
+
+          echo "=== BUILD BAŞLIYOR ==="
+          echo "Klasör: $(pwd)"
+          echo "=== BUILD.SH ==="
+
+          bash -x ./build.sh
+
+      - name: ISO'yu kontrol et
         run: |
-          find . -type f -name "*.iso" -print
+          echo "=== ISO DOSYALARI ==="
+          find . -type f -iname "*.iso" -print
+
+          ISO_COUNT=$(find . -type f -iname "*.iso" | wc -l)
+
+          if [ "$ISO_COUNT" -eq 0 ]; then
+            echo "HATA: ISO oluşturulmadı!"
+            exit 1
+          fi
+
+          echo "Bulunan ISO sayısı: $ISO_COUNT"
 
       - name: ISO'yu yükle
         uses: actions/upload-artifact@v6
