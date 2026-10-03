@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Repository indir
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Gerekli araçları kur
         run: |
@@ -21,7 +21,6 @@ jobs:
         run: |
           mkdir xloos
           unzip -q XLoOs-Lite-1.0.zip -d xloos
-          find xloos -name build.sh -type f -print
 
       - name: XLoOs'u derle
         run: |
@@ -35,7 +34,7 @@ jobs:
           find . -type f -name "*.iso" -print
 
       - name: ISO'yu yükle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: XLoOs-ISO
           path: "**/*.iso"
