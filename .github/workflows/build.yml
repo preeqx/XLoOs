@@ -28,10 +28,11 @@ jobs:
       - name: Projeyi aç
         run: |
           rm -rf xloos
-          mkdir xloos
+          mkdir -p xloos
+
           unzip -q XLoOs-Lite-1.0.zip -d xloos
 
-          echo "=== DOSYALAR ==="
+          echo "=== PROJE DOSYALARI ==="
           find xloos -maxdepth 3 -type f -print
 
       - name: Build dosyasını bul
@@ -43,7 +44,9 @@ jobs:
             exit 1
           fi
 
-          echo "Build dosyası: $BUILD"
+          echo "Build dosyası bulundu:"
+          echo "$BUILD"
+
           chmod +x "$BUILD"
 
       - name: XLoOs'u derle
@@ -55,15 +58,31 @@ jobs:
 
           cd "$BUILD_DIR"
 
-          echo "=== BUILD BAŞLIYOR ==="
-          echo "Klasör: $(pwd)"
-          echo "=== BUILD.SH ==="
+          echo "================================"
+          echo "       XLoOs BUILD BAŞLIYOR"
+          echo "================================"
 
-          bash -x ./build.sh
+          echo "Klasör:"
+          pwd
+
+          echo "Build dosyası:"
+          ls -l build.sh
+
+          echo "Root kontrolü:"
+          sudo id
+
+          echo "================================"
+          echo "       BUILD.SH ÇALIŞIYOR"
+          echo "================================"
+
+          sudo bash -x ./build.sh
 
       - name: ISO'yu kontrol et
         run: |
-          echo "=== ISO DOSYALARI ==="
+          echo "================================"
+          echo "          ISO KONTROLÜ"
+          echo "================================"
+
           find . -type f -iname "*.iso" -print
 
           ISO_COUNT=$(find . -type f -iname "*.iso" | wc -l)
