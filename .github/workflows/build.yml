@@ -1,0 +1,42 @@
+name: Build XLoOs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Repository indir
+        uses: actions/checkout@v4
+
+      - name: Gerekli araçları kur
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip git live-build debootstrap xorriso \
+            grub-pc-bin grub-efi-amd64-bin qemu-user-static
+
+      - name: XLoOs projesini aç
+        run: |
+          mkdir xloos
+          unzip -q XLoOs-Lite-1.0.zip -d xloos
+          find xloos -name build.sh -type f -print
+
+      - name: XLoOs'u derle
+        run: |
+          BUILD=$(find xloos -name build.sh -type f | head -1)
+          chmod +x "$BUILD"
+          cd "$(dirname "$BUILD")"
+          sudo ./build.sh
+
+      - name: ISO'yu bul
+        run: |
+          find . -type f -name "*.iso" -print
+
+      - name: ISO'yu yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: XLoOs-ISO
+          path: "**/*.iso"
+          if-no-files-found: error
